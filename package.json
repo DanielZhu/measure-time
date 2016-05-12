@@ -1,0 +1,49 @@
+{
+  "name": "measure-time",
+  "description": "To measure time",
+  "version": "0.0.1",
+  "author": {
+    "name": "Daniel Zhu",
+    "email": "enterzhu@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielZhu/measure-time.git"
+  },
+  "keywords": [
+    "time",
+    "middleware"
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "index.js"
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec --bail --check-leaks test/",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
+    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/"
+  },
+  "gitHead": "",
+  "bugs": {
+    "url": "https://github.com/DanielZhu/measure-time/issues"
+  },
+  "homepage": "https://github.com/DanielZhu/measure-time",
+  "_id": "measure-time@0.0.1",
+  "maintainers": [
+    {
+      "name": "Daniel Zhu",
+      "email": "enterzhu@gmail.com"
+    }
+  ],
+  "dist": {},
+  "directories": {},
+  "readme": "ERROR: No README data found!",
+  "_shasum": "2e156fc50d1ca15caee8a25c5e97d97f1e8e13f5",
+  "_from": "node_modules/measure-time",
+  "_resolved": "file:node_modules/measure-time"
+}

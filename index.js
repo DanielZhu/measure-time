@@ -8,6 +8,9 @@ var fse = require('fs-extra');
 var path = require('path');
 var md5 = require('md5');
 
+var pageViewLogFilePath = '../../log/measureTime/page.%pageName%.log';
+var logRelativeFilePath = '../../log/measureTime/%key%.log';
+
 exports = module.exports = function measureTime(opts) {
     return function measureTime(req, res, next) {
         var matchedMeasure = false;
@@ -18,56 +21,186 @@ exports = module.exports = function measureTime(opts) {
         });
 
         if (matchedMeasure) {
-            req.pageStartTime = new Date().getTime();
-            req.encryptedKey = md5(matchedMeasure.pageName + '-' + req.pageStartTime + '-' + randomNum());
+            var now = new Date();
+            req.pageStartTime = now.getTime();
+            var date = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate()
+                + ' ' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+            var formatDate = dateformat(date, 'MMddhhmmss');
+            req.mtKey = formatDate + '.'
+                + md5(matchedMeasure.pageName + '-' + req.pageStartTime + '-' + randomNum());
             var costTimeStart = {
-                pageSessionKey: req.encryptedKey,
+                mtKey: req.mtKey,
                 pageName: matchedMeasure.pageName,
                 pageStart: req.pageStartTime
             };
             res.cookie(
                 'mtKey',
-                req.encryptedKey,
-                {httpOnly: false, expires: new Date(Date.now() + 1800000),
-                domain: '.hui.baidu.com'}
+                req.mtKey,
+                {httpOnly: false, expires: new Date(Date.now() + 1000 * 60 * 10),
+                domain: opts.domain}
             );
-            fse.outputJson(
-                opts.logPath + '/measureTime.' + req.encryptedKey + '.json',
-                costTimeStart,
+            console.log('===measureTime=req.cookies.mtKey: ' + req.mtKey);
+            fse.outputFile(
+                opts.logPath + '/' + req.mtKey + '.log',
+                JSON.stringify(costTimeStart),
                 function (err) {
 
                 }
             );
+        }
+        else {
+            // res.clearCookie('mtKey');
         }
 
         next();
     };
 };
 
-function randomNum() {
-    return Math.random() * 10000;
-}
+function finishRecording(res, record, opts) {
+    // res && res.clearCookie('mtKey');
+    if (record.hasOwnProperty('mtKey')) {
+        var logFilePath = path.resolve(__dirname, logRelativeFilePath.replace(/%key%/, record.mtKey));
 
-function addTimeRecord(record, opts) {
-    if (record.hasOwnProperty('encryptedKey')) {
-        var logRelativeFilePath = '../../log/measureTime/measureTime.' + record.encryptedKey + '.json';
-        var logFilePath = path.resolve(__dirname, logRelativeFilePath);
-        fse.readJson(logFilePath, function (err, savedCostTime) {
-            for (var key in record) {
-                if (record.hasOwnProperty(key) && key !== 'encryptedKey') {
-                    savedCostTime[key] = parseFloat(record[key]);
-                }
+        fse.readFile(logFilePath, function (err, savedCostTime) {
+            if (err) {
+                opts.error && opts.error();
             }
+            else {
+                savedCostTime = JSON.parse(savedCostTime);
+                var matched = savedCostTime.hasOwnProperty('mtKey')
+                            && record.mtKey === savedCostTime.mtKey;
+                if (matched) {
+                    for (var key in savedCostTime) {
+                        if (savedCostTime.hasOwnProperty(key)) {
+                            record[key] = savedCostTime[key];
+                        }
+                    }
 
-            fse.outputJson(logFilePath, savedCostTime, function (err) {
-                opts.success && opts.success();
-            });
+                    opts.success && opts.success();
+                    collectForPage(record);
+                    fse.remove(logFilePath, function (err) {
+                        // if (err) return console.error(err)
+                        // console.log('success!')
+                    });
+                }
+                else {
+                    opts.error && opts.error();
+                }
+
+            }
         });
     }
     else {
-        // No encryptedKey, skip this op
+        // No mtKey, skip this op
         opts.error && opts.error();
     }
 }
 
+function addTimeRecord(record, opts) {
+    if (record.hasOwnProperty('mtKey')) {
+        var logFilePath = path.resolve(__dirname, logRelativeFilePath.replace(/%key%/, record.mtKey));
+
+        fse.readFile(logFilePath, function (err, savedCostTime) {
+            if (err) {
+                opts.error && opts.error();
+            }
+            else {
+                savedCostTime = JSON.parse(savedCostTime);
+                var matched = savedCostTime.hasOwnProperty('mtKey')
+                            && record.mtKey === savedCostTime.mtKey;
+                if (matched) {
+                    for (var key in record) {
+                        if (record.hasOwnProperty(key)) {
+                            savedCostTime[key] = record[key];
+                        }
+                    }
+                    fse.outputFile(logFilePath, JSON.stringify(savedCostTime), function (err) {
+                        if (err) {
+                            opts.error && opts.error();
+                        }
+                        else {
+                            opts.success && opts.success();
+                        }
+                    });
+                }
+                else {
+                    opts.error && opts.error();
+                }
+            }
+        });
+    }
+    else {
+        // No mtKey, skip this op
+        opts.error && opts.error();
+    }
+}
+
+function collectForPage(record) {
+    var logFilePath = path.resolve(__dirname, pageViewLogFilePath.replace(/%pageName%/, record.pageName));
+    delete record.pageName;
+
+    fse.ensureFileSync(logFilePath);
+    fse.readFile(logFilePath, function (err, savedPageLogs) {
+        try {
+            if (savedPageLogs && savedPageLogs.length > 0) {
+                savedPageLogs = JSON.parse(savedPageLogs);
+            }
+            else {
+                savedPageLogs = [];
+            }
+            savedPageLogs.push(record);
+
+            fse.outputFile(logFilePath, JSON.stringify(savedPageLogs), function (err) {});
+        }
+        catch (e) {
+            console.log(e);
+        }
+    });
+}
+
+function randomNum() {
+    return Math.random() * 10000;
+}
+
+function dateformat(date, format) {
+    date = date.replace(/-/g, '/');
+    format = format || 'yyyy-MM-dd';
+
+    // switch (typeof date) {
+        // case 'string':
+            // date = parseInt(date, 10);
+        // case 'number':
+    date = new Date(date);
+            // break;
+    // }
+
+    if (!date instanceof Date) {
+        date = new Date();
+    }
+
+    var o = {
+        'M+': date.getMonth() + 1, // month
+        'd+': date.getDate(), // day
+        'h+': date.getHours(), // hour
+        'm+': date.getMinutes(), // minutes
+        's+': date.getSeconds(), // second
+        'q+': Math.floor((date.getMonth() + 3) / 3), // quarter
+        'S': date.getMilliseconds() // ms
+    };
+    if (/(y+)/.test(format)) {
+        format = format.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
+    }
+    for (var k in o) {
+        if (new RegExp('(' + k + ')').test(format)) {
+            format = format.replace(
+                RegExp.$1,
+                (RegExp.$1.length === 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length))
+            );
+        }
+    }
+
+    return format;
+}
+
 exports.addTimeRecord = addTimeRecord;
+exports.finishRecording = finishRecording;

@@ -15,7 +15,10 @@
     "time",
     "middleware"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "fs-extra": "^0.30.0",
+    "md5": "^2.1.0"
+  },
   "devDependencies": {},
   "files": [
     "index.js"

@@ -17,7 +17,8 @@
   ],
   "dependencies": {
     "fs-extra": "^0.30.0",
-    "md5": "^2.1.0"
+    "md5": "^2.1.0",
+    "commander": ">= 2.9.0"
   },
   "devDependencies": {},
   "files": [
@@ -43,10 +44,8 @@
       "email": "enterzhu@gmail.com"
     }
   ],
-  "dist": {},
-  "directories": {},
-  "readme": "ERROR: No README data found!",
-  "_shasum": "2e156fc50d1ca15caee8a25c5e97d97f1e8e13f5",
-  "_from": "node_modules/measure-time",
-  "_resolved": "file:node_modules/measure-time"
+  "bin": {
+    "measureTime": "./bin/measureTime"
+  },
+  "preferGlobal": true
 }

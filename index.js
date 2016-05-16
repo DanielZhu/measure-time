@@ -1,5 +1,5 @@
 /**
- * @file Measure time - Collect Time cost and Measure
+ * @file Time Using Middleware - Collect Time cost and Measure
  *
  * MIT Licensed
  * @author Daniel Zhu <enterzhu@gmail.com>
@@ -8,12 +8,24 @@ var fse = require('fs-extra');
 var path = require('path');
 var md5 = require('md5');
 
-var pageViewLogFilePath = '../../log/measureTime/page.%pageName%.log';
-var logRelativeFilePath = '../../log/measureTime/%key%.log';
+// var pageViewLogFilePath = '../../log/timeUsing/page.%pageName%.log';
+// var logRelativeFilePath = '../../log/timeUsing/%key%.log';
 
-exports = module.exports = function measureTime(opts) {
-    return function measureTime(req, res, next) {
+var logPath = '';
+var pageViewLogFilePath = '';
+var logRelativeFilePath = '';
+
+exports = module.exports = function timeUsingMiddleware(opts) {
+    return function timeUsingMiddleware(req, res, next) {
         var matchedMeasure = false;
+        logPath = opts.runtimePath + opts.logPath;
+        pageViewLogFilePath = path.resolve(__dirname, logPath + '/page.%pageName%.log');
+        logRelativeFilePath = path.resolve(__dirname, logPath + '/%key%.log');
+
+        console.log('logPath: ' + logPath);
+        console.log('pageViewLogFilePath: ' + pageViewLogFilePath);
+        console.log('logRelativeFilePath: ' + logRelativeFilePath);
+
         opts.measureUrlPatterns.forEach(function (item) {
             if (item.pattern.test(req.originalUrl)) {
                 matchedMeasure = item;
@@ -39,9 +51,10 @@ exports = module.exports = function measureTime(opts) {
                 {httpOnly: false, expires: new Date(Date.now() + 1000 * 60 * 10),
                 domain: opts.domain}
             );
-            console.log('===measureTime=req.cookies.mtKey: ' + req.mtKey);
+            console.log('===timeUsing=req.cookies.mtKey: ' + req.mtKey);
+            console.log('===timeUsing=logpath: ' + logPath + '/' + req.mtKey + '.log');
             fse.outputFile(
-                opts.logPath + '/' + req.mtKey + '.log',
+                logPath + '/' + req.mtKey + '.log',
                 JSON.stringify(costTimeStart),
                 function (err) {
 
@@ -59,8 +72,8 @@ exports = module.exports = function measureTime(opts) {
 function finishRecording(res, record, opts) {
     // res && res.clearCookie('mtKey');
     if (record.hasOwnProperty('mtKey')) {
-        var logFilePath = path.resolve(__dirname, logRelativeFilePath.replace(/%key%/, record.mtKey));
-
+        var logFilePath = logRelativeFilePath.replace(/%key%/, record.mtKey);
+        console.log('readFie: ' + logFilePath);
         fse.readFile(logFilePath, function (err, savedCostTime) {
             if (err) {
                 opts.error && opts.error();
@@ -98,7 +111,7 @@ function finishRecording(res, record, opts) {
 
 function addTimeRecord(record, opts) {
     if (record.hasOwnProperty('mtKey')) {
-        var logFilePath = path.resolve(__dirname, logRelativeFilePath.replace(/%key%/, record.mtKey));
+        var logFilePath = logRelativeFilePath.replace(/%key%/, record.mtKey);
 
         fse.readFile(logFilePath, function (err, savedCostTime) {
             if (err) {
@@ -136,7 +149,7 @@ function addTimeRecord(record, opts) {
 }
 
 function collectForPage(record) {
-    var logFilePath = path.resolve(__dirname, pageViewLogFilePath.replace(/%pageName%/, record.pageName));
+    var logFilePath = pageViewLogFilePath.replace(/%pageName%/, record.pageName);
     delete record.pageName;
 
     fse.ensureFileSync(logFilePath);

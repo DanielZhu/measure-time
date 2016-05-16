@@ -1,51 +1,31 @@
 {
-  "name": "measure-time",
+  "name": "time-using-middleware",
+  "version": "0.1.0",
   "description": "To measure time",
-  "version": "0.0.1",
-  "author": {
-    "name": "Daniel Zhu",
-    "email": "enterzhu@gmail.com"
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DanielZhu/measure-time.git"
+    "url": "git+https://github.com/DanielZhu/time-using-middleware.git"
   },
   "keywords": [
     "time",
     "middleware"
   ],
+  "author": "Daniel Zhu <enterzhu@gmail.com> (http://staydan.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DanielZhu/time-using-middleware/issues"
+  },
+  "homepage": "https://github.com/DanielZhu/time-using-middleware#readme",
   "dependencies": {
     "fs-extra": "^0.30.0",
     "md5": "^2.1.0",
     "commander": ">= 2.9.0"
   },
-  "devDependencies": {},
-  "files": [
-    "index.js"
-  ],
-  "engines": {
-    "node": ">= 0.8.0"
-  },
-  "scripts": {
-    "test": "mocha --reporter spec --bail --check-leaks test/",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
-    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/"
-  },
-  "gitHead": "",
-  "bugs": {
-    "url": "https://github.com/DanielZhu/measure-time/issues"
-  },
-  "homepage": "https://github.com/DanielZhu/measure-time",
-  "_id": "measure-time@0.0.1",
-  "maintainers": [
-    {
-      "name": "Daniel Zhu",
-      "email": "enterzhu@gmail.com"
-    }
-  ],
   "bin": {
-    "measureTime": "./bin/measureTime"
-  },
-  "preferGlobal": true
+    "timeusing": "./bin/timeUsing"
+  }
 }

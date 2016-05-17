@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title></title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+    <style>
+        .container {
+            position: relative;
+            width: 100%;
+            background-color: #fff
+        }
+        .nav-silder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            overflow: hidden;
+            border-right: 1px solid #ddd;
+        }
+        .perf-content {
+            position: relative;
+            margin-left: 200px;
+            width: calc(100% - 200px);
+        }
+        .perf-content ul {
+            list-style: none;
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .perf-content ul li {
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+        .perf-content ul li .title, .perf-content ul li .value {
+            display: inline-block;
+            width: 48%;
+            box-sizing: border-box;
+            padding: 10px 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-silder">
+            {{ for: ${pageList} as ${pageName}, ${idxPage} }}
+            <div>${pageName}</div>
+            {{ /for }}
+        </div>
+        <div class="perf-content">
+        {{ for: ${perfList} as ${perfItems}, ${idxPref} }}
+            <ul class="data-page-${idxPref}">
+            {{ for: ${perfItems} as ${records}, ${index} }}
+                <div>${index}</div>
+                {{ for: ${records} as ${record}, ${label} }}
+                <li class="record-item">
+                    <div class="title">${label}</div>
+                    <div class="value">${record}</div>
+                </li>
+                {{ /for }}
+            {{ /for }}
+            </ul>
+        {{ /for }}
+        </div>
+    </div>
+</body>
+</html>

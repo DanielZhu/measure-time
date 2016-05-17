@@ -1,0 +1,60 @@
+#!/usr/bin/env node
+
+/** Time Using Middleware
+ * alias: timeUsing
+ *
+ * @author Daniel ZHu <enterzhu@gmail.com>
+ * @date: 2015-05-15
+ */
+
+var program = require('commander');
+var tools = require('../tools');
+var fse = require('fs-extra');
+var path = require('path');
+
+program
+  .version('0.1.0')
+  .usage('[options] <dirs>')
+  .option('-i, --input [path]', 'where the log files read from', '.')
+  .option('-o, --output [path]', 'where the report put to', '.')
+  .option('-p, --pagename', 'pagename', '.')
+  .option('-l, --log', '0.1.0')
+  .parse(process.argv);
+
+// console.log(' args: %j', program.args);
+
+var inputPath = program.input;
+var outputPath = program.output;
+var pagename = program.pagename;
+
+console.log('inputPath: ' + inputPath);
+console.log('outputPath: ' + outputPath);
+console.log('pagename: ' + pagename);
+
+function readDataByPageName(pageName) {
+
+}
+
+function readDataInFolder(path) {
+    var pageFileReg = /^page\.(.*)\.log$/;
+    var files = fse.readdirSync(path);
+    var pageNameList = [];
+    var perfData = {};
+    if (files) {
+        for (var i = files.length - 1; i > 0; i--) {
+            var regResult = pageFileReg.exec(files[i]);
+            if (regResult) {
+                perfData[regResult[1]] = JSON.parse(fse.readFileSync(path + '/' + files[i], {encoding: 'utf8', autoClose: true}));
+                pageNameList.push(regResult[1]);
+            }
+            else {
+                files.splice(i, 1);
+            }
+        }
+    }
+
+    return {pageNameList: pageNameList, perfData: perfData};
+}
+
+var data = readDataInFolder(inputPath);
+tools.renderHtml(data.pageNameList, data.perfData);

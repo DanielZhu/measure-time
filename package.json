@@ -1,6 +1,6 @@
 {
   "name": "time-using-middleware",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "To measure time",
   "main": "index.js",
   "scripts": {
@@ -21,9 +21,10 @@
   },
   "homepage": "https://github.com/DanielZhu/time-using-middleware#readme",
   "dependencies": {
+    "commander": ">= 2.9.0",
+    "etpl": "^3.0.1",
     "fs-extra": "^0.30.0",
-    "md5": "^2.1.0",
-    "commander": ">= 2.9.0"
+    "md5": "^2.1.0"
   },
   "bin": {
     "timeusing": "./bin/timeUsing"

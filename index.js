@@ -8,9 +8,6 @@ var fse = require('fs-extra');
 var path = require('path');
 var md5 = require('md5');
 
-// var pageViewLogFilePath = '../../log/timeUsing/page.%pageName%.log';
-// var logRelativeFilePath = '../../log/timeUsing/%key%.log';
-
 var logPath = '';
 var pageViewLogFilePath = '';
 var logRelativeFilePath = '';

@@ -11,15 +11,16 @@ var program = require('commander');
 var tools = require('../tools');
 var fse = require('fs-extra');
 var path = require('path');
+var chalk = require('chalk');
 
 program
-  .version('0.1.0')
-  .usage('[options] <dirs>')
-  .option('-i, --input [path]', 'where the log files read from', '.')
-  .option('-o, --output [path]', 'where the report put to', '.')
-  .option('-p, --pagename', 'pagename', '.')
-  .option('-l, --log', '0.1.0')
-  .parse(process.argv);
+    .version('0.1.0')
+    .usage('[options] <dirs>')
+    .option('-i, --input [path]', 'where the log files read from', '.')
+    .option('-o, --output [path]', 'where the report put to', '.')
+    .option('-p, --pagename', 'pagename', '.')
+    .option('-l, --log', '0.1.0')
+    .parse(process.argv);
 
 // console.log(' args: %j', program.args);
 
@@ -27,9 +28,65 @@ var inputPath = program.input;
 var outputPath = program.output;
 var pagename = program.pagename;
 
-console.log('inputPath: ' + inputPath);
-console.log('outputPath: ' + outputPath);
-console.log('pagename: ' + pagename);
+// console.log('inputPath: ' + inputPath);
+// console.log('outputPath: ' + outputPath);
+// console.log('pagename: ' + pagename);
+
+/**
+ * 用户可自定义的输出图标配置
+ * @type {Array}
+ */
+var jsonConfig = {
+    pageName: 'appDetailContent',
+    configs: [
+        {
+            key: 'Combined FE API',
+            formula: 'allFeApiFinishTime'
+        },
+        {
+            key: 'Price API',
+            formula: '/facade/hui/detail/price/get'
+        },
+        {
+            key: 'Comment API',
+            formula: '/facade/hui/comment/hot'
+        },
+        {
+            key: 'Exps API',
+            formula: '/facade/hui/app/experience/get'
+        },
+        {
+            key: 'ShareOrder API',
+            formula: '/facade/hui/app/shareOrder/get'
+        },
+        {
+            key: 'CMS API(n)',
+            formula: '/cms/getPage'
+        },
+        {
+            key: 'Contnet API(n)',
+            formula: '/facade/hui/app/detail/content'
+        },
+        {
+            key: 'Node All API(n)',
+            formula: 'allNodeApiFinishTime'
+        },
+        {
+            key: 'FirstScreen Dom',
+            formula: [
+                'DOMContentLoaded',
+                'pageStart'
+            ]
+        },
+        {
+            key: 'All Widget Dom',
+            formula: [
+                'widgetContentLoaded',
+                'pageStart'
+            ]
+        }
+    ]
+};
 
 function readDataByPageName(pageName) {
 
@@ -56,5 +113,205 @@ function readDataInFolder(path) {
     return {pageNameList: pageNameList, perfData: perfData};
 }
 
-var data = readDataInFolder(inputPath);
-tools.renderHtml(data.pageNameList, data.perfData);
+function init () {
+    console.log('');
+    console.log(chalk.bgCyan('-------------------------------------------------'));
+    console.log(chalk.bgCyan('----- Time Using Middleware by Staydan.com ------'));
+    console.log(chalk.bgCyan('-------------------------------------------------'));
+
+    var self = this;
+    var invalidSamples = true;
+
+    var now = new Date().getTime();
+    var logData = readDataInFolder(inputPath);
+    console.log(tools.timeDiff(now) + ' analyzing log data finished...');
+    console.log('contain pages counts: ' + logData.pageNameList.length);
+
+    /**
+     * Structures
+     *
+     * {
+     *     pageName1: data,
+     *     pageName2: data
+     * }
+     */
+    var pageLogDatas = logData.perfData;
+    var appDetailContentSamples = (pageLogDatas.hasOwnProperty(jsonConfig.pageName) && pageLogDatas[jsonConfig.pageName]) || [];
+
+    // Remove the dirty data before analyze
+    var sampleCounts = lengthFunc(appDetailContentSamples);
+    // console.log(chalk.cyan('sample counts for PAGE ' + jsonConfig.pageName + ' : ' + sampleCounts));
+
+    var validSampleCounts = 0;
+
+    // Collect the unique keys
+    var allFormulaIndexes = [];
+    for (var i = 0; i < jsonConfig.configs.length; i++) {
+        var jsonConfigItem = jsonConfig.configs[i];
+        if (Array.isArray(jsonConfigItem.formula)) {
+            allFormulaIndexes.concat(jsonConfigItem.formula);
+        }
+        else {
+            allFormulaIndexes.push(jsonConfigItem.formula);
+        }
+    }
+    var uniqueFormulaIndexes = [];
+    for (var j = 0; j < allFormulaIndexes.length; j++) {
+        if (uniqueFormulaIndexes.indexOf(allFormulaIndexes[j]) === -1) {
+            uniqueFormulaIndexes.push(allFormulaIndexes[j]);
+        }
+    }
+    // console.log('uniqueFormulaIndexes: ' + uniqueFormulaIndexes.join(', '));
+
+    var storages = {};
+    appDetailContentSamples.forEach(function (sample) {
+        var keyAppearCount = 0;
+        for (var iKey in sample) {
+            if (uniqueFormulaIndexes.indexOf(iKey) !== -1) {
+                // Parse to number
+                sample[iKey] = +sample[iKey];
+                keyAppearCount++;
+            }
+        }
+        // Inject the valid flag to each sample
+        sample.valid = (keyAppearCount === uniqueFormulaIndexes.length);
+        sample.valid && validSampleCounts++;
+    });
+
+    if (validSampleCounts > 0) {
+        // Prepare Data
+        var finalData = {};
+
+        console.log('');
+        jsonConfig.configs.forEach(function (configItem) {
+            finalData[configItem.key] = [];
+
+            appDetailContentSamples.forEach(function (sample) {
+                if (sample.valid) {
+                    if (Array.isArray(configItem.formula)) {
+                        var formulaLength = configItem.formula.length;
+                        var index = 0;
+                        var value = sample[configItem.formula[index]];
+                        while (index < formulaLength - 1) {
+                            index++
+                            value -= sample[configItem.formula[index]];
+                        }
+                        finalData[configItem.key].push(value);
+                    }
+                    else {
+                        finalData[configItem.key].push(sample[configItem.formula]);
+                    }
+                }
+            });
+            // console.log(chalk.gray.bold('data for key [' + configItem.key + '] ', finalData[configItem.key].join(', ')));
+        });
+        // console.log(JSON.stringify(finalData));
+        console.log(tools.timeDiff(now) + 'assembling data...');
+        var analyzedTable = formatFunc(finalData);
+        // console.log('data for rendering');
+        // console.log(JSON.stringify(analyzedTable));
+
+        console.log(chalk.cyan('samples counts for PAGE ' + jsonConfig.pageName + ' : ' + validSampleCounts + ' / ' + sampleCounts + ' (valid / sum)'));
+
+        tools.printMarkdownTable(jsonConfig.pageName, analyzedTable);
+        // tools.renderHtml([], analyzedTable);
+
+        console.log('');
+        console.log('');
+        console.log('');
+        console.log(chalk.bgCyan('-------------------------------------------------'));
+        console.log(chalk.bgCyan('       Time Using Middleware by Staydan.com      '));
+        console.log(chalk.bgCyan('                                                 '));
+        console.log(chalk.bgCyan('   Collect Data & Analyze Logs & Export Reports  '));
+        console.log(chalk.bgCyan('-------------------------------------------------'));
+        console.log('');
+        console.log('');
+
+        var tips = '有效样本数减少，说明该接口在某次请求时出现异常，最后分析的样本数为：'
+            + validSampleCounts
+            + '。注意：最后的数据统计中已剔除该次的所有数据！';
+    }
+}
+
+function removeDirtyData (statData, index) {
+    this.validSampleCounts--;
+    for (var key in statData) {
+        if (statData.hasOwnProperty(key)) {
+            statData[key].splice(index, 1);
+        }
+    }
+    return statData;
+}
+
+function lengthFunc (arr) {
+    return arr.length;
+}
+
+function medianFunc (arr) {
+    arr.sort(function (a, b) {
+        return a - b;
+    });
+    var len = arr.length;
+    if (len % 2) {
+        return arr[~~(len / 2)];
+    }
+    return (+arr[len / 2 - 1] + +arr[len / 2]) / 2;
+}
+
+function minFunc (arr) {
+    return Math.min.apply(Math, arr);
+}
+
+function maxFunc (arr) {
+    return Math.max.apply(Math, arr);
+}
+
+function averageFunc (arr) {
+    var total = arr.reduce(function (a, b) {
+        return +a + +b;
+    });
+    return +((total / arr.length).toFixed(1));
+}
+
+function formatFunc (data) {
+    var self = this;
+    var results = {};
+    var serial = [
+        {
+            label: 'Sample Count',
+            func: lengthFunc
+        },
+        {
+            label: 'average(ms)',
+            func: averageFunc
+        },
+        {
+            label: 'median(ms)',
+            func: medianFunc
+        },
+        {
+            label: 'min(ms)',
+            func: minFunc
+        },
+        {
+            label: 'max(ms)',
+            func: maxFunc
+        }
+    ];
+    for (var key in data) {
+        if (data.hasOwnProperty(key)) {
+            results[key] = {};
+            var val = data[key];
+            serial.forEach(function (serialItem, index) {
+                var value = serialItem.func(val);
+                // if (index === 0) {
+                //     value = self.invalidSamplesCount[key];
+                // }
+                results[key][serialItem.label] = value;
+            });
+        }
+    }
+    return results;
+}
+
+init();

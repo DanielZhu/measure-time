@@ -1,4 +1,6 @@
 # time-using-middleware
+ 
+ [![NPM version](http://img.shields.io/npm/v/npm-expansions.svg?style=flat-square)](https://www.npmjs.com/package/time-using-middleware) [![NPM DOWNLOAD](https://img.shields.io/npm/dm/localeval.svg?maxAge=2592000)](https://www.npmjs.com/package/time-using-middleware) [![NPM license](http://img.shields.io/npm/l/npm-expansions.svg?style=flat-square)](https://www.npmjs.com/package/time-using-middleware)
 
 A tool to collect time cost for requests, waiting for HTML back, rendering page and etc., also it can export performance testing reports to HTML & pdf easily.
 

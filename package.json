@@ -1,6 +1,6 @@
 {
   "name": "time-using-middleware",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "To measure time",
   "main": "index.js",
   "scripts": {

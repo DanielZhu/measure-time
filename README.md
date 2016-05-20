@@ -2,6 +2,15 @@
 
 A tool to collect time cost for requests, waiting for HTML back, rendering page and etc., also it can export performance testing reports to HTML & pdf easily.
 
+## Features
+
+- Export Table Reports using Command Line window in Markdown format
+- Recording the data of each page session
+- Record pages by Regex Expression filters defined in Options
+- Complete the page collect session until it recieve the COMPLETE signal by timeUsingMiddlewareCollectFinish
+- Support those Pages which are consist of by both Nodejs side render and Front-end JS work. The cookie `mtKey` can tracking all of them
+- All the time attributes are defined by Developers(You)
+
 ## Notice
 
 This timing tool is under constructing right now, currenlty I'm using it to measure performance when calling APIs from nodejs, and support collect all the key-value pair data throung two public methods: `addTimeRecord` & `finishRecording`.
@@ -24,7 +33,44 @@ $ npm install time-using-middleware --save
 timeUsing -i ./log/timeUsing
 ```
 
-Currently output path is not supported
+### Command Line Report Preview
+
+``` md
+-------------------------------------------------
+----- Time Using Middleware by Staydan.com ------
+-------------------------------------------------
+5ms -  analyzing log data finished...
+contain pages counts: 1
+
+15ms - assembling data...
+samples counts for PAGE detailContent : 1090 / 1090 (valid / sum)
+0ms - preparing the table data...
+
+------- Performance Testing Results -------
+
+Page : detailContent
+
+|                         | Sample Count | average(ms) | median(ms) | min(ms) | max(ms) |
+| :---------------------- | :----------: | :---------: | :--------: | :-----: | :-----: |
+| Combined FE API         |     1090     |    267.5    |     221    |   181   |   1474  |
+| Game API                |     1090     |    222.3    |     187    |   156   |   1392  |
+| Tool API                |     1090     |    208.9    |     180    |   150   |   1427  |
+| Extension API           |     1090     |    237.2    |     208    |   168   |   1472  |
+| Share API               |     1090     |    232.2    |     208    |   164   |   1408  |
+| Comment API(n)          |     1090     |    175.6    |    150.5   |   127   |   887   |
+| PostList API(n)         |     1090     |    107.4    |     76     |    67   |   2622  |
+| Node All API(n)         |     1090     |    186.8    |     153    |   129   |   2623  |
+| FirstScreen Dom Loaded  |     1090     |    297.2    |     260    |   221   |   2849  |
+| All Page Dom Loaded     |     1090     |     884     |     806    |   689   |   4481  |
+
+3ms - finish render data
+
+-------------------------------------------------
+       Time Using Middleware by Staydan.com      
+                                                 
+   Collect Data & Analyze Logs & Export Reports  
+-------------------------------------------------
+```
 
 ## How to Integrate with your app(Examples)
 
@@ -151,7 +197,7 @@ util.post('/tu/finish', timeCostCollected)
     'pageName': 'detailContent',
     'configs': [
         {
-            'key': 'Combined Front-end API',
+            'key': 'Combined FE API',
             'formula': 'allFeApiFinishTime'
         },
         {

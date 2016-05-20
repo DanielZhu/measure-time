@@ -131,11 +131,10 @@ util.post('/tu/finish', timeCostCollected)
     });
 ```
 
-**options.pageConfig**
-> < v0.4.1: It's been hard coded in the tool, I will expose it soon
+**options.pageConfig (local JSON file)**
+> veresion <= v0.4.1: It's been hard coded in the tool, I will expose it soon
 
-``` json
-
+``` js
 /**
  * Definition how to calc all the attributes read from log file
  *
@@ -146,51 +145,53 @@ util.post('/tu/finish', timeCostCollected)
  * 
  * @type {Array}
  */
+```
+``` json
 {
-    pageName: 'detailContent',
-    configs: [
+    'pageName': 'detailContent',
+    'configs': [
         {
-            key: 'Combined Front-end API',
-            formula: 'allFeApiFinishTime'
+            'key': 'Combined Front-end API',
+            'formula': 'allFeApiFinishTime'
         },
         {
-            key: 'Game API',
-            formula: '/staydan/v1/game/list'
+            'key': 'Game API',
+            'formula': '/staydan/v1/game/list'
         },
         {
-            key: 'Tool API',
-            formula: '/staydan/v1/tool/list'
+            'key': 'Tool API',
+            'formula': '/staydan/v1/tool/list'
         },
         {
-            key: 'Extension API',
-            formula: '/staydan/v1/extension/list'
+            'key': 'Extension API',
+            'formula': '/staydan/v1/extension/list'
         },
         {
-            key: 'Share API',
-            formula: /staydan/v1/share'
+            'key': 'Share API',
+            'formula': '/staydan/v1/share'
         },
         {
-            key: 'Comment API(n)',
-            formula: '/staydan/blog/comment/list'
+            'key': 'Comment API(n)',
+            'formula': '/staydan/blog/comment/list'
         },
         {
-            key: 'PostList API(n)',
-            formula: '/staydan/blog/post/list'
+            'key': 'PostList API(n)',
+            'formula': '/staydan/blog/post/list'
         },
         {
-            key: 'Node All API(n)',
-            formula: 'allNodeApiFinishTime'
+            'key': 'Node All API(n)',
+            'formula': 'allNodeApiFinishTime'
         },
         {
-            key: 'FirstScreen Dom Loaded',
-            formula: [
+            'key': 'FirstScreen Dom Loaded',
+            'formula': [
                 'DOMContentLoaded',
                 'pageStart'
             ]
         },
         {
-            key: 'All Page Dom Loaded',
-            formula: [
+            'key': 'All Page Dom Loaded',
+            'formula': [
                 'widgetContentLoaded',
                 'pageStart'
             ]

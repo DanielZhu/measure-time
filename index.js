@@ -45,8 +45,8 @@ exports = module.exports = function timeUsingMiddleware(opts) {
             res.cookie(
                 'mtKey',
                 req.mtKey,
-                {httpOnly: false, expires: new Date(Date.now() + 1000 * 60 * 10),
-                domain: opts.domain}
+                {httpOnly: false, expires: new Date(Date.now() + 1000 * 60 * 10)}
+                // domain: opts.domain}
             );
             console.log('===timeUsing=req.cookies.mtKey: ' + req.mtKey);
             console.log('===timeUsing=logpath: ' + logPath + '/' + req.mtKey + '.log');

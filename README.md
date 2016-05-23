@@ -1,6 +1,6 @@
 # time-using-middleware
  
- [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![License][license-image]][npm-url] 
+ [![NPM version][npm-version-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![License][license-image]][npm-url] 
 
 A tool to collect time cost for requests, waiting for HTML back, rendering page and etc., also it can export performance testing reports to HTML & pdf easily.
 
@@ -271,9 +271,10 @@ use this to calc the time attributes and export them to the reports.
 Define the path where time-using-middleware middleware store the log files.
 
 ### [MIT Licensed](LICENSE) @staydan.com 2016
+[![npm]()](https://www.npmjs.com/package/time-using-middleware)
 
-[license-image]: https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square
-[downloads-image]: https://img.shields.io/npm/dm/localeval.svg?style=flat-square
+
+[license-image]: https://img.shields.io/npm/l/time-using-middleware.svg?maxAge=2592000&style=flat-square
+[downloads-image]: https://img.shields.io/npm/dm/time-using-middleware.svg?maxAge=2592000&style=flat-square
+[npm-version-image]: http://img.shields.io/npm/v/time-using-middleware.svg?maxAge=2592000&style=flat-square
 [npm-url]: https://www.npmjs.com/package/time-using-middleware
-[npm-image]: http://img.shields.io/npm/v/npm-expansions.svg?style=flat-square
-

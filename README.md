@@ -270,9 +270,7 @@ use this to calc the time attributes and export them to the reports.
 [`String`, Required]
 Define the path where time-using-middleware middleware store the log files.
 
-### [MIT Licensed](LICENSE) @staydan.com 2016
-[![npm]()](https://www.npmjs.com/package/time-using-middleware)
-
+### [MIT Licensed](LICENSE) [@staydan.com](http://staydan.com) 2016
 
 [license-image]: https://img.shields.io/npm/l/time-using-middleware.svg?maxAge=2592000&style=flat-square
 [downloads-image]: https://img.shields.io/npm/dm/time-using-middleware.svg?maxAge=2592000&style=flat-square

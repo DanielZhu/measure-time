@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @file Time Using Middleware - Collect Time cost and Measure
  *
@@ -7,6 +8,14 @@
 var fse = require('fs-extra');
 var path = require('path');
 var md5 = require('md5');
+var chalk = require('chalk');
+var cookieParser;
+try {
+    cookieParser = require('cookie-parser');
+}
+catch (e) {
+    checkDeps(cookieParser);
+}
 
 var logPath = '';
 var pageViewLogFilePath = '';
@@ -19,9 +28,9 @@ exports = module.exports = function timeUsingMiddleware(opts) {
         pageViewLogFilePath = path.resolve(__dirname, logPath + '/page.%pageName%.log');
         logRelativeFilePath = path.resolve(__dirname, logPath + '/%key%.log');
 
-        console.log('logPath: ' + logPath);
-        console.log('pageViewLogFilePath: ' + pageViewLogFilePath);
-        console.log('logRelativeFilePath: ' + logRelativeFilePath);
+        // console.log('logPath: ' + logPath);
+        // console.log('pageViewLogFilePath: ' + pageViewLogFilePath);
+        // console.log('logRelativeFilePath: ' + logRelativeFilePath);
 
         opts.measureUrlPatterns.forEach(function (item) {
             if (item.pattern.test(req.originalUrl)) {
@@ -48,8 +57,8 @@ exports = module.exports = function timeUsingMiddleware(opts) {
                 {httpOnly: false, expires: new Date(Date.now() + 1000 * 60 * 10)}
                 // domain: opts.domain}
             );
-            console.log('===timeUsing=req.cookies.mtKey: ' + req.mtKey);
-            console.log('===timeUsing=logpath: ' + logPath + '/' + req.mtKey + '.log');
+            // console.log('===timeUsing=req.cookies.mtKey: ' + req.mtKey);
+            // console.log('===timeUsing=logpath: ' + logPath + '/' + req.mtKey + '.log');
             fse.outputFile(
                 logPath + '/' + req.mtKey + '.log',
                 JSON.stringify(costTimeStart),
@@ -66,11 +75,21 @@ exports = module.exports = function timeUsingMiddleware(opts) {
     };
 };
 
+function checkDeps(target) {
+    try {
+        if (typeof target === 'undefined' || target === null) {
+            console.log(chalk.bgRed('time-using-middleware does depends on cookie-parser middleware as it need to parse cookie and check it. Please check your deps.'));
+        }
+    } catch (e) {
+        console.log(chalk.bgRed('Error'));
+    }
+}
+
 function finishRecording(res, record, opts) {
     // res && res.clearCookie('mtKey');
     if (record.hasOwnProperty('mtKey')) {
         var logFilePath = logRelativeFilePath.replace(/%key%/, record.mtKey);
-        console.log('readFie: ' + logFilePath);
+        // console.log('readFie: ' + logFilePath);
         fse.readFile(logFilePath, function (err, savedCostTime) {
             if (err) {
                 opts.error && opts.error();
@@ -87,6 +106,8 @@ function finishRecording(res, record, opts) {
                     }
 
                     opts.success && opts.success();
+
+                    delete record.mtKey;
                     collectForPage(record);
                     fse.remove(logFilePath, function (err) {
                         // if (err) return console.error(err)
@@ -214,3 +235,4 @@ function dateformat(date, format) {
 
 exports.addTimeRecord = addTimeRecord;
 exports.finishRecording = finishRecording;
+/* eslint-enable no-console */

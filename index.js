@@ -86,7 +86,6 @@ function checkDeps(target) {
 }
 
 function finishRecording(res, record, opts) {
-    // res && res.clearCookie('mtKey');
     if (record.hasOwnProperty('mtKey')) {
         var logFilePath = logRelativeFilePath.replace(/%key%/, record.mtKey);
         // console.log('readFie: ' + logFilePath);
@@ -95,6 +94,10 @@ function finishRecording(res, record, opts) {
                 opts.error && opts.error();
             }
             else {
+                // One collect session finished, clear the mtKey cookie
+                res && res.clearCookie('mtKey');
+                opts.success && opts.success();
+
                 savedCostTime = JSON.parse(savedCostTime);
                 var matched = savedCostTime.hasOwnProperty('mtKey')
                             && record.mtKey === savedCostTime.mtKey;
@@ -105,19 +108,16 @@ function finishRecording(res, record, opts) {
                         }
                     }
 
-                    opts.success && opts.success();
-
                     delete record.mtKey;
                     collectForPage(record);
                     fse.remove(logFilePath, function (err) {
                         // if (err) return console.error(err)
-                        // console.log('success!')
+                        // console.log('success!');
                     });
                 }
                 else {
                     opts.error && opts.error();
                 }
-
             }
         });
     }
@@ -167,8 +167,9 @@ function addTimeRecord(record, opts) {
 }
 
 function collectForPage(record) {
-    var logFilePath = pageViewLogFilePath.replace(/%pageName%/, record.pageName);
+    var pageName = record.pageName;
     delete record.pageName;
+    var logFilePath = pageViewLogFilePath.replace(/%pageName%/, pageName);
 
     fse.ensureFileSync(logFilePath);
     fse.readFile(logFilePath, function (err, savedPageLogs) {
@@ -181,7 +182,9 @@ function collectForPage(record) {
             }
             savedPageLogs.push(record);
 
-            fse.outputFile(logFilePath, JSON.stringify(savedPageLogs), function (err) {});
+            console.log(chalk.bgYellow('[' + pageName + ']') + ' Collected Log Records: ' + savedPageLogs.length);
+
+            fse.outputFileSync(logFilePath, JSON.stringify(savedPageLogs));
         }
         catch (e) {
             console.log(e);

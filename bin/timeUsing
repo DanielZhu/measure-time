@@ -38,29 +38,30 @@ var now = new Date().getTime();
 // console.log('pagename: ' + pagename);
 
 var Logger = function () {
-    var welcomeMsg = '-------------------------------------------------'
-                    + '----- Time Using Middleware by Staydan.com ------'
+    this.welcomeMsg = '\n-------------------------------------------------\n'
+                    + '      Time Using Middleware by Staydan.com       \n'
+                    + '                                                 \n'
+                    + '                                    v' + version + '     \n'
                     + '-------------------------------------------------';
 
-    var goodbyeMsg = '-------------------------------------------------'
-                    + '       Time Using Middleware by Staydan.com      '
-                    + '                                                 '
-                    + '   Collect Data & Analyze Logs & Export Reports  '
+    this.goodbyeMsg = '\n-------------------------------------------------\n'
+                    + '       Time Using Middleware by Staydan.com      \n'
+                    + '                                                 \n'
+                    + '   Collect Data & Analyze Logs & Export Reports  \n'
                     + '-------------------------------------------------';
 };
 
 Logger.prototype.welcome = function (status) {
-    console.log('');
-    console.log('');
-    console.log('');
-    console.log(chalk.bgCyan('-------------------------------------------------'));
-    console.log(chalk.bgCyan('       Time Using Middleware by Staydan.com      '));
-    console.log(chalk.bgCyan('                                                 '));
-    console.log(chalk.bgCyan('   Collect Data & Analyze Logs & Export Reports  '));
-    console.log(chalk.bgCyan('-------------------------------------------------'));
-    console.log('');
-    console.log('');
-}
+    console.log('\n\n\n');
+    console.log(chalk.bgCyan(this.welcomeMsg));
+    console.log('\n\n');
+};
+
+Logger.prototype.goodbye = function (status) {
+    console.log('\n\n\n');
+    console.log(chalk.bgCyan(this.goodbyeMsg));
+    console.log('\n\n');
+};
 
 var logger = new Logger();
 
@@ -87,10 +88,11 @@ function execute () {
     }
 
     var analyzedResult = getAnalyzedResult(pageConfigMapping);
+    console.log(JSON.stringify(analyzedResult));
 
     printToCl(analyzedResult);
-    // exportToFile('html', analyzedResult);
-    // logger.execute('finish');
+    exportToFile('html', analyzedResult);
+    logger.goodbye();
 
     // var tips = '有效样本数减少，说明该接口在某次请求时出现异常，最后分析的样本数为：'
     //     + validSampleCounts
@@ -106,8 +108,8 @@ function printToCl(analyzedResult) {
     }
 }
 
-function exportToFile(format, analyzedDataForPage) {
-    tools.renderHtml([], analyzedDataForPage);
+function exportToFile(format, analyzedDataAll) {
+    tools.exportFile(format, analyzedDataAll);
 }
 
 /**
@@ -146,60 +148,6 @@ function getAnalyzedResult(pageConfigMappingList) {
 
     return results;
 }
-
-/*
-var jsonConfig = {
-    pageName: 'appDetailContent',
-    configs: [
-        {
-            key: 'Combined FE API',
-            formula: 'allFeApiFinishTime'
-        },
-        {
-            key: 'Price API',
-            formula: '/facade/hui/detail/price/get'
-        },
-        {
-            key: 'Comment API',
-            formula: '/facade/hui/comment/hot'
-        },
-        {
-            key: 'Exps API',
-            formula: '/facade/hui/app/experience/get'
-        },
-        {
-            key: 'ShareOrder API',
-            formula: '/facade/hui/app/shareOrder/get'
-        },
-        {
-            key: 'CMS API(n)',
-            formula: '/cms/getPage'
-        },
-        {
-            key: 'Contnet API(n)',
-            formula: '/facade/hui/app/detail/content'
-        },
-        {
-            key: 'Node All API(n)',
-            formula: 'allNodeApiFinishTime'
-        },
-        {
-            key: 'FirstScreen Dom',
-            formula: [
-                'DOMContentLoaded',
-                'pageStart'
-            ]
-        },
-        {
-            key: 'All Widget Dom',
-            formula: [
-                'widgetContentLoaded',
-                'pageStart'
-            ]
-        }
-    ]
-};
-*/
 
 function readDataByPageName(pageName) {
 

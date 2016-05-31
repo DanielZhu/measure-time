@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @file Export Utility
  *
@@ -8,6 +9,7 @@ var path = require('path');
 var etpl = require('etpl');
 var chalk = require('chalk');
 var mkTable = require('markdown-table');
+var markdown = require('markdown').markdown;
 
 etpl.config({
     commandOpen: '{{',
@@ -30,8 +32,7 @@ function stringLength(value) {
     return length;
 }
 
-var printMarkdownTable = function (title, tableData) {
-    var now = new Date().getTime();
+function getMarkdownTable(tableData) {
     var data = [];
     var initedHeader = false;
     var tableHeader = [''];
@@ -57,6 +58,18 @@ var printMarkdownTable = function (title, tableData) {
             data.push(tableBodyRow);
         }
     }
+
+    return mkTable(data, {
+        align: tableRowAlign || [],
+        stringLength: stringLength
+    });
+}
+
+var printMarkdownTable = function (title, tableData) {
+    var now = new Date().getTime();
+
+    var resultInMd = getMarkdownTable(tableData);
+
     console.log(this.timeDiff(now) + 'preparing the table data...');
     // console.log('table data: ' + JSON.stringify(data));
     console.log('');
@@ -65,31 +78,27 @@ var printMarkdownTable = function (title, tableData) {
     console.log(chalk.yellow('Page : ' + title));
     console.log('');
 
-    now = new Date().getTime();
-    console.log(chalk.white(mkTable(data, {
-        align: tableRowAlign,
-        stringLength: stringLength
-    })));
+    console.log(chalk.white(resultInMd));
 
-    console.log('');
-    console.log('');
+    now = new Date().getTime();
+    console.log('\n\n');
     console.log(this.timeDiff(now) + 'finish render data');
 };
 
-var renderHtml = function (pageList, perfData) {
+var exportFile = function (format, data) {
     var tplPath = path.join(__dirname, './tpl/report.html');
 
     var tplText = fse.readFileSync(tplPath, {encoding: 'utf8', autoClose: true});
 
     var render = etpl.compile(tplText);
-    console.log(JSON.stringify(perfData));
-    var compiled = render({pageList: pageList, perfList: perfData});
+    var compiled = render({perfList: data});
     writeToFile('report.' + new Date().getTime() + '.html', compiled);
 };
 
 var timeDiff = function (previous) {
     return chalk.yellow(new Date().getTime() - previous + 'ms - ');
-}
+};
+
 module.exports.timeDiff = timeDiff;
 module.exports.printMarkdownTable = printMarkdownTable;
-module.exports.renderHtml = renderHtml;
+module.exports.exportFile = exportFile;

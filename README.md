@@ -50,6 +50,10 @@ Specify which format of files you want to export, default to CL screen, otherwis
 timeUsing -i ./log/timeUsing/ -c ./timeUsing.json -f html,pdf
 ```
 
+### HTML Report Preview
+
+![HTML Report](http://staydan.com/sweet/homePage/preImgs/time.using.middleware/html.png)
+
 ### Command Line Report Preview
 
 ``` md

@@ -9,7 +9,7 @@ var path = require('path');
 var etpl = require('etpl');
 var chalk = require('chalk');
 var mkTable = require('markdown-table');
-var markdown = require('markdown').markdown;
+var pjson = require('./package.json');
 
 etpl.config({
     commandOpen: '{{',
@@ -86,13 +86,33 @@ var printMarkdownTable = function (title, tableData) {
 };
 
 var exportFile = function (format, data) {
+    // for (var pageName in data) {
+    //     if (data.hasOwnProperty(pageName)) {
+    //         data[pageName].mdData = getMarkdownTable(data[pageName]);
+    //         console.log(markdown.toHTML(data[pageName].mdData));
+    //     }
+    // }
+
+    var socialAccount = [
+        {
+            name: 'Weibo',
+            account: 'D_A_Niel',
+            link: 'http://weibo.com/1590387133'
+        },
+        {
+            name: 'Github',
+            account: 'DanielZhu',
+            link: 'https://github.com/DanielZhu'
+        }
+    ];
+
     var tplPath = path.join(__dirname, './tpl/report.html');
 
     var tplText = fse.readFileSync(tplPath, {encoding: 'utf8', autoClose: true});
 
     var render = etpl.compile(tplText);
-    var compiled = render({perfList: data});
-    writeToFile('report.' + new Date().getTime() + '.html', compiled);
+    var compiled = render({perfList: data, socialAccount: socialAccount, pjson: pjson});
+    writeToFile('report.html', compiled);
 };
 
 var timeDiff = function (previous) {

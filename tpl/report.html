@@ -9,65 +9,133 @@
     <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
     <style>
         .container {
-            position: relative;
-            width: 100%;
-            background-color: #fff
+          position: relative;
+          width: 100%;
+          background-color: #fff;
         }
-        .nav-silder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 200px;
-            height: 100%;
-            overflow: hidden;
-            border-right: 1px solid #ddd;
-        }
+
         .perf-content {
-            position: relative;
-            margin-left: 200px;
-            width: calc(100% - 200px);
+          position: relative;
+          margin-left: 20px;
         }
-        .perf-content ul {
-            list-style: none;
-            margin: 20px 0;
-            padding: 20px;
-            border: 1px solid #ddd;
+        .perf-content .page-item {
+          padding-top: 20px;
+          border-bottom: 1px solid #ddd;
         }
-        .perf-content ul li {
-            border: 1px solid #ddd;
-            padding: 5px;
+        .perf-content .page-title {
+          font-size: 16px;
+          color: #666;
+          margin: 5px 15px;
         }
-        .perf-content ul li .title, .perf-content ul li .value {
-            display: inline-block;
-            width: 48%;
-            box-sizing: border-box;
-            padding: 10px 5px;
+        .perf-content .page-table {
+          padding: 5px 20px;
+          font-size: 14px;
+        }
+        .perf-content .page-table .table-header {
+          border-bottom: 1px solid #ddd;
+          padding: 5px;
+          color: #DA8383;
+        }
+        .perf-content .page-table .table-header .table-header-item {
+          padding: 10px;
+          text-align: center;
+        }
+        .perf-content .page-table .record-item {
+          color: #666;
+        }
+        .perf-content .page-table .record-item .value {
+          text-align: center;
+          padding: 6px 2px;
+        }
+        .perf-content .page-table .record-item .attr-key {
+          color: #DA8383;
+        }
+
+        .footer {
+          position: relative;
+          width: 100%;
+          height: 80px;
+          font-size: 12px;
+          font-weight: lighter;
+          text-align: center;
+          color: #ddd;
+          margin-top: 120px;
+        }
+        .footer .footer-separator {
+          margin: 0 10px;
+          opacity: .75;
+        }
+        .footer .pro-codename-version {
+          font-size: 12px;
+          opacity: .5;
+        }
+        .footer .dot-separator {
+          padding: 0 10px;
+        }
+        .footer .footer-separator {
+          margin: 5px auto;
+          position: relative;
+          height: 1px;
+          width: 25%;
+          text-align: center;
+        }
+        .footer .sns-account {
+          padding: 0 20px;
+          cursor: pointer;
+          text-decoration: none;
+          color: #ddd;
+        }
+        .footer .sns-account:hover {
+          color: #DA8383;
         }
 
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="nav-silder">
-            {{ for: ${pageList} as ${pageName}, ${idxPage} }}
-            <div>${pageName}</div>
+<!--         <div class="nav-silder">
+            {{ for: ${perfList} as ${pageData}, ${pageTitle} }}
+                <p class="page-title">${pageTitle} </p>
             {{ /for }}
-        </div>
+        </div> -->
         <div class="perf-content">
-        {{ for: ${perfList} as ${perfItems}, ${idxPref} }}
-            <ul class="data-page-${idxPref}">
-            {{ for: ${perfItems} as ${records}, ${index} }}
-                <div>${index}</div>
-                {{ for: ${records} as ${record}, ${label} }}
-                <li class="record-item">
-                    <div class="title">${label}</div>
-                    <div class="value">${record}</div>
-                </li>
+        {{ for: ${perfList} as ${pageData}, ${pageTitle} }}
+            {{ var: header=0 }}
+            <div class="page-item page-${pageTitle}">
+                <p class="page-title"># ${pageTitle} </p>
+                <table class="page-table">
+                {{ for: ${pageData} as ${records}, ${attrKey} }}
+                    {{ if: ${header}==0 }}
+                    <tr class="table-header">
+                        <th class="table-header-item"></th>
+                        {{ for: ${records} as ${perfValue}, ${perfLabel} }}
+                        <th class="table-header-item">${perfLabel}</th>
+                        {{ /for }}
+                    </tr>
+                    {{ var: header=1 }}
+                    {{ /if }}
+                    <tr class="record-item">
+                    <td class="value attr-key">${attrKey}</td>
+                    {{ for: ${records} as ${perfValue}, ${perfLabel} }}
+                        <td class="value">${perfValue}</td>
+                    {{ /for }}
+                    </tr>
                 {{ /for }}
-            {{ /for }}
-            </ul>
+                </table>
+            </div>
         {{ /for }}
         </div>
     </div>
+    <footer class="footer clearfix" v-show="show">
+        <div class="social-info">
+            {{ for: ${socialAccount} as ${sns} }}
+            <a href="${sns.link}" class="sns-account">${sns.name}</a>
+            {{ /for }}
+        </div>
+        <div class="footer-separator"></div>
+        <div>
+            © 2012 - 2016 Staydan.com<span class="dot-separator">·</span><span class="pro-version">v${pjson.version}</span>
+        </div>
+    </footer>
 </body>
 </html>

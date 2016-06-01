@@ -88,7 +88,6 @@ function execute () {
     }
 
     var analyzedResult = getAnalyzedResult(pageConfigMapping);
-    console.log(JSON.stringify(analyzedResult));
 
     printToCl(analyzedResult);
     exportToFile('html', analyzedResult);

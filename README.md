@@ -29,47 +29,81 @@ The cookie which will be set to the client if the page's url was included in pat
 $ npm install time-using-middleware --save
 ```
 
-## How to Export Report
+## How to Use
+
+  Usage: timeUsing [options] <dirs>
+
+  Options:
+
+    -h, --help               output usage information
+    -V, --version            output the version number
+    -i, --input [path]       where the log files read from
+    -o, --output [path]      where the report put to
+    -c, --pageconfig [path]  all configs for each pages
+    -f, --format <types>     the format of the exported file
+
+### format `-f`
+
+Specify which format of files you want to export, default to CL screen, otherwise, it should be in HTML and PDF.
 
 ``` sh
-timeUsing -i ./log/timeUsing
+timeUsing -i ./log/timeUsing/ -c ./timeUsing.json -f html,pdf
 ```
 
 ### Command Line Report Preview
 
 ``` md
 -------------------------------------------------
------ Time Using Middleware by Staydan.com ------
--------------------------------------------------
-5ms -  analyzing log data finished...
-contain pages counts: 1
+      Time Using Middleware by Staydan.com       
 
-15ms - assembling data...
-samples counts for PAGE detailContent : 1090 / 1090 (valid / sum)
-0ms - preparing the table data...
+                                    v0.4.3     
+-------------------------------------------------
+
+30ms -  analyzing log data finished...
+contain pages counts: 2
+ Analyzing For [ timeUsingTestPage ]
+validSampleCounts: 1156
+
+42ms - assembling data...
+samples counts for PAGE [ timeUsingTestPage ] : 1156 / 1156 (valid / sum)
+ Analyzing For [ testDemoPage ]
+validSampleCounts: 7159
+
+109ms - assembling data...
+samples counts for PAGE [ testDemoPage ] : 7159 / 7159 (valid / sum)
+6ms - preparing the table data...
 
 ------- Performance Testing Results -------
 
-Page : detailContent
+Page : timeUsingTestPage
 
-|                         | Sample Count | average(ms) | median(ms) | min(ms) | max(ms) |
-| :---------------------- | :----------: | :---------: | :--------: | :-----: | :-----: |
-| Combined FE API         |     1090     |    267.5    |     221    |   181   |   1474  |
-| Game API                |     1090     |    222.3    |     187    |   156   |   1392  |
-| Tool API                |     1090     |    208.9    |     180    |   150   |   1427  |
-| Extension API           |     1090     |    237.2    |     208    |   168   |   1472  |
-| Share API               |     1090     |    232.2    |     208    |   164   |   1408  |
-| Comment API(n)          |     1090     |    175.6    |    150.5   |   127   |   887   |
-| PostList API(n)         |     1090     |    107.4    |     76     |    67   |   2622  |
-| Node All API(n)         |     1090     |    186.8    |     153    |   129   |   2623  |
-| FirstScreen Dom Loaded  |     1090     |    297.2    |     260    |   221   |   2849  |
-| All Page Dom Loaded     |     1090     |     884     |     806    |   689   |   4481  |
+|                 | Sample Count | average(ms) | median(ms) | min(ms) | max(ms) |
+| :-------------- | :----------: | :---------: | :--------: | :-----: | :-----: |
+| Test API        |     1156     |    1026.1   |   1039.5   |    7    |   2489  |
+| Node All API(n) |     1156     |    1026.4   |   1039.5   |    8    |   2502  |
+| FirstScreen Dom |     1156     |    1060.3   |   1072.5   |    37   |   2585  |
 
-3ms - finish render data
+
+0ms - finish render data
+4ms - preparing the table data...
+
+------- Performance Testing Results -------
+
+Page : testDemoPage
+
+|                 | Sample Count | average(ms) | median(ms) | min(ms) | max(ms) |
+| :-------------- | :----------: | :---------: | :--------: | :-----: | :-----: |
+| Test API        |     7159     |    992.2    |     985    |    2    |   2514  |
+| Node All API(n) |     7159     |    992.3    |     986    |    2    |   2522  |
+| FirstScreen Dom |     7159     |    1025.8   |    1011    |    20   |   2738  |
+
+
+1ms - finish render data
+Exporting file in HTML finished
 
 -------------------------------------------------
        Time Using Middleware by Staydan.com      
-                                                 
+
    Collect Data & Analyze Logs & Export Reports  
 -------------------------------------------------
 ```
@@ -179,8 +213,17 @@ util.post('/tu/finish', timeCostCollected)
     });
 ```
 
-**options.pageConfig (local JSON file)**
-> veresion <= v0.4.1: It's been hard coded in the tool, I will expose it soon
+## Options
+
+### domain (Deprecated)
+
+ [`String`, Optional]
+`mtKey` use this, it always be the host of your website.
+
+### pageConfig (not supported)
+
+ [`JSON`, Optional]
+use this to calc the time attributes and export them to the reports.
 
 ``` js
 /**
@@ -195,70 +238,49 @@ util.post('/tu/finish', timeCostCollected)
  */
 ```
 ``` json
-{
-    'pageName': 'detailContent',
-    'configs': [
-        {
-            'key': 'Combined FE API',
-            'formula': 'allFeApiFinishTime'
-        },
-        {
-            'key': 'Game API',
-            'formula': '/staydan/v1/game/list'
-        },
-        {
-            'key': 'Tool API',
-            'formula': '/staydan/v1/tool/list'
-        },
-        {
-            'key': 'Extension API',
-            'formula': '/staydan/v1/extension/list'
-        },
-        {
-            'key': 'Share API',
-            'formula': '/staydan/v1/share'
-        },
-        {
-            'key': 'Comment API(n)',
-            'formula': '/staydan/blog/comment/list'
-        },
-        {
-            'key': 'PostList API(n)',
-            'formula': '/staydan/blog/post/list'
-        },
-        {
-            'key': 'Node All API(n)',
-            'formula': 'allNodeApiFinishTime'
-        },
-        {
-            'key': 'FirstScreen Dom Loaded',
-            'formula': [
-                'DOMContentLoaded',
-                'pageStart'
-            ]
-        },
-        {
-            'key': 'All Page Dom Loaded',
-            'formula': [
-                'widgetContentLoaded',
-                'pageStart'
-            ]
-        }
-    ]
-}
+[
+    {
+        "pageName": "timeUsingTestPage",
+        "configs": [
+            {
+                "key": "Test API",
+                "formula": "/test"
+            },
+            {
+                "key": "Node All API(n)",
+                "formula": "allNodeApiFinishTime"
+            },
+            {
+                "key": "FirstScreen Dom",
+                "formula": [
+                    "DOMContentLoaded",
+                    "pageStart"
+                ]
+            }
+        ]
+    },
+    {
+        "pageName": "testDemoPage",
+        "configs": [
+            {
+                "key": "Test API",
+                "formula": "/test"
+            },
+            {
+                "key": "Node All API(n)",
+                "formula": "allNodeApiFinishTime"
+            },
+            {
+                "key": "FirstScreen Dom",
+                "formula": [
+                    "DOMContentLoaded",
+                    "pageStart"
+                ]
+            }
+        ]
+    }
+]
 ```
-
-## Options
-
-### domain (not supported)
-
- [`String`, Optional]
-`mtKey` use this, it always be the host of your website.
-
-### pageConfig (not supported)
-
- [`JSON`, Optional]
-use this to calc the time attributes and export them to the reports.
 
 ### measureUrlPatterns
 

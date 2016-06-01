@@ -81,7 +81,7 @@ var printMarkdownTable = function (title, tableData) {
     console.log(chalk.white(resultInMd));
 
     now = new Date().getTime();
-    console.log('\n\n');
+    console.log('\n');
     console.log(this.timeDiff(now) + 'finish render data');
 };
 

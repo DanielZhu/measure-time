@@ -14,12 +14,17 @@ var path = require('path');
 var chalk = require('chalk');
 var version = '0.4.3';
 
+function list(val) {
+  return val.toLowerCase().split(',');
+}
+
 program
     .version(version)
     .usage('[options] <dirs>')
     .option('-i, --input [path]', 'where the log files read from', '.')
     .option('-o, --output [path]', 'where the report put to', '.')
     .option('-c, --pageconfig [path]', 'all configs for each pages', '.')
+    .option('-f, --format <types>', 'the format of the exported file', list, ['html', 'pdf'])
     .option('-l, --log', version)
     .parse(process.argv);
 
@@ -29,6 +34,7 @@ var inputPath = program.input;
 var outputPath = program.output;
 var pagename = program.pagename;
 var pageConfigPath = program.pageconfig;
+var exportFormat = program.format;
 
 // Execute Start Timestamp
 var now = new Date().getTime();
@@ -52,13 +58,13 @@ var Logger = function () {
 };
 
 Logger.prototype.welcome = function (status) {
-    console.log('\n\n\n');
+    console.log('\n');
     console.log(chalk.bgCyan(this.welcomeMsg));
     console.log('\n\n');
 };
 
 Logger.prototype.goodbye = function (status) {
-    console.log('\n\n\n');
+    console.log('\n');
     console.log(chalk.bgCyan(this.goodbyeMsg));
     console.log('\n\n');
 };
@@ -90,7 +96,15 @@ function execute () {
     var analyzedResult = getAnalyzedResult(pageConfigMapping);
 
     printToCl(analyzedResult);
-    exportToFile('html', analyzedResult);
+
+    if (exportFormat.indexOf('html') !== -1) {
+        exportToFile('html', analyzedResult);
+    }
+
+    if (exportFormat.indexOf('pdf') !== -1) {
+        exportToFile('pdf', analyzedResult);
+    }
+
     logger.goodbye();
 
     // var tips = '有效样本数减少，说明该接口在某次请求时出现异常，最后分析的样本数为：'
@@ -109,6 +123,7 @@ function printToCl(analyzedResult) {
 
 function exportToFile(format, analyzedDataAll) {
     tools.exportFile(format, analyzedDataAll);
+    console.log('Exporting file in ' + format.toUpperCase() + ' finished');
 }
 
 /**

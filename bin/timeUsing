@@ -7,123 +7,123 @@
  * @date: 2015-05-15
  */
 
-var program = require('commander');
-var tools = require('../tools');
-var fse = require('fs-extra');
-var path = require('path');
-var chalk = require('chalk');
-var version = '0.4.3';
+var program = require('commander')
+var tools = require('../tools')
+var fse = require('fs-extra')
+// var path = require('path')
+var chalk = require('chalk')
+var version = '0.4.3'
 
-function list(val) {
-  return val.toLowerCase().split(',');
+function list (val) {
+  return val.toLowerCase().split(',')
 }
 
 program
-    .version(version)
-    .usage('[options] <dirs>')
-    .option('-i, --input [path]', 'where the log files read from', '.')
-    .option('-o, --output [path]', 'where the report put to', '.')
-    .option('-c, --pageconfig [path]', 'all configs for each pages', '.')
-    .option('-f, --format <types>', 'the format of the exported file', list, ['html', 'pdf'])
-    .option('-l, --log', version)
-    .parse(process.argv);
+  .version(version)
+  .usage('[options] <dirs>')
+  .option('-i, --input [path]', 'where the log files read from', '.')
+  .option('-o, --output [path]', 'where the report put to', '.')
+  .option('-c, --pageconfig [path]', 'all configs for each pages', '.')
+  .option('-f, --format <types>', 'the format of the exported file', list, ['html', 'pdf'])
+  .option('-l, --log', version)
+  .parse(process.argv)
 
-// console.log(' args: %j', program.args);
+// console.log(' args: %j', program.args)
 
-var inputPath = program.input;
-var outputPath = program.output;
-var pagename = program.pagename;
-var pageConfigPath = program.pageconfig;
-var exportFormat = program.format;
+var inputPath = program.input
+// var outputPath = program.output
+// var pagename = program.pagename
+var pageConfigPath = program.pageconfig
+var exportFormat = program.format
 
 // Execute Start Timestamp
-var now = new Date().getTime();
+var now = new Date().getTime()
 
-// console.log('inputPath: ' + inputPath);
-// console.log('outputPath: ' + outputPath);
-// console.log('pagename: ' + pagename);
+// console.log('inputPath: ' + inputPath)
+// console.log('outputPath: ' + outputPath)
+// console.log('pagename: ' + pagename)
 
 var Logger = function () {
-    this.welcomeMsg = '\n-------------------------------------------------\n'
-                    + '      Time Using Middleware by Staydan.com       \n'
-                    + '                                                 \n'
-                    + '                                    v' + version + '     \n'
-                    + '-------------------------------------------------';
+  this.welcomeMsg =
+    '\n-------------------------------------------------\n' +
+    '      Time Using Middleware by Staydan.com       \n' +
+    '                                                 \n' +
+    '                                    v' + version + '     \n' +
+    ' -------------------------------------------------'
 
-    this.goodbyeMsg = '\n-------------------------------------------------\n'
-                    + '       Time Using Middleware by Staydan.com      \n'
-                    + '                                                 \n'
-                    + '   Collect Data & Analyze Logs & Export Reports  \n'
-                    + '-------------------------------------------------';
-};
+  this.goodbyeMsg =
+    '\n-------------------------------------------------\n' +
+    '       Time Using Middleware by Staydan.com      \n' +
+    '                                                 \n' +
+    '   Collect Data & Analyze Logs & Export Reports  \n' +
+    '-------------------------------------------------'
+}
 
 Logger.prototype.welcome = function (status) {
-    console.log('\n');
-    console.log(chalk.bgCyan(this.welcomeMsg));
-    console.log('\n\n');
-};
+  console.log('\n')
+  console.log(chalk.bgCyan(this.welcomeMsg))
+  console.log('\n\n')
+}
 
 Logger.prototype.goodbye = function (status) {
-    console.log('\n');
-    console.log(chalk.bgCyan(this.goodbyeMsg));
-    console.log('\n\n');
-};
+  console.log('\n')
+  console.log(chalk.bgCyan(this.goodbyeMsg))
+  console.log('\n\n')
+}
 
-var logger = new Logger();
+var logger = new Logger()
 
 function execute () {
-    logger.welcome();
+  logger.welcome()
 
-    var self = this;
-    var invalidSamples = true;
+//   var invalidSamples = true
 
-    /**
-     * 用户可自定义的输出图标配置
-     * @type {Array}
-     */
-    var pageConfigMapping = {};
-    var pageConfigList = loadPageConfigs();
-    if (pageConfigList) {
-        pageConfigList.forEach(function (pageConfig) {
-            pageConfigMapping[pageConfig.pageName] = pageConfig.configs;
-        });
-    }
-    else {
-        console.log(chalk.red('No defined config provided, using default key for the report'));
-        pageConfigMapping = {};
-    }
+  /**
+   * 用户可自定义的输出图标配置
+   * @type {Array}
+   */
+  var pageConfigMapping = {}
+  var pageConfigList = loadPageConfigs()
+  if (pageConfigList) {
+    pageConfigList.forEach(function (pageConfig) {
+      pageConfigMapping[pageConfig.pageName] = pageConfig.configs
+    })
+  } else {
+    console.log(chalk.red('No defined config provided, using default key for the report'))
+    pageConfigMapping = {}
+  }
 
-    var analyzedResult = getAnalyzedResult(pageConfigMapping);
+  var analyzedResult = getAnalyzedResult(pageConfigMapping)
 
-    printToCl(analyzedResult);
+  printToCl(analyzedResult)
 
-    if (exportFormat.indexOf('html') !== -1) {
-        exportToFile('html', analyzedResult);
-    }
+  if (exportFormat.indexOf('html') !== -1) {
+    exportToFile('html', analyzedResult)
+  }
 
-    if (exportFormat.indexOf('pdf') !== -1) {
-        exportToFile('pdf', analyzedResult);
-    }
+  if (exportFormat.indexOf('pdf') !== -1) {
+    exportToFile('pdf', analyzedResult)
+  }
 
-    logger.goodbye();
+  logger.goodbye()
 
-    // var tips = '有效样本数减少，说明该接口在某次请求时出现异常，最后分析的样本数为：'
-    //     + validSampleCounts
-    //     + '。注意：最后的数据统计中已剔除该次的所有数据！';
+// var tips = '有效样本数减少，说明该接口在某次请求时出现异常，最后分析的样本数为：'
+//     + validSampleCounts
+//     + '。注意：最后的数据统计中已剔除该次的所有数据！'
 }
 
-function printToCl(analyzedResult) {
-    // Print results in CL
-    for (var pageName in analyzedResult) {
-        if (analyzedResult.hasOwnProperty(pageName)) {
-            tools.printMarkdownTable(pageName, analyzedResult[pageName]);
-        }
+function printToCl (analyzedResult) {
+  // Print results in CL
+  for (var pageName in analyzedResult) {
+    if (analyzedResult.hasOwnProperty(pageName)) {
+      tools.printMarkdownTable(pageName, analyzedResult[pageName])
     }
+  }
 }
 
-function exportToFile(format, analyzedDataAll) {
-    tools.exportFile(format, analyzedDataAll);
-    console.log('Exporting file in ' + format.toUpperCase() + ' finished');
+function exportToFile (format, analyzedDataAll) {
+  tools.exportFile(format, analyzedDataAll)
+  console.log('Exporting file in ' + format.toUpperCase() + ' finished')
 }
 
 /**
@@ -134,44 +134,43 @@ function exportToFile(format, analyzedDataAll) {
  *     pageName2: {results: {}, data: data}
  * }
  */
-function getAnalyzedResult(pageConfigMappingList) {
-    var results = {};
-    var logData = readDataInFolder(inputPath);
+function getAnalyzedResult (pageConfigMappingList) {
+  var results = {}
+  var logData = readDataInFolder(inputPath)
 
-    for (var pageName in logData) {
-        if (logData.hasOwnProperty(pageName)) {
-            results[pageName] = {};
-            console.log(chalk.bgCyan(' Analyzing For [ ' + pageName + ' ]      '));
+  for (var pageName in logData) {
+    if (logData.hasOwnProperty(pageName)) {
+      results[pageName] = {}
+      console.log(chalk.bgCyan(' Analyzing For [ ' + pageName + ' ]      '))
 
-            var logsForPage = logData[pageName] || [];
-            var sampleCounts = lengthFunc(logsForPage);
+      var logsForPage = logData[pageName] || []
+      var sampleCounts = lengthFunc(logsForPage)
 
-            var uniqueFormulaKeys = [];
-            var pageConfig = pageConfigMappingList[pageName];
+      var uniqueFormulaKeys = []
+      var pageConfig = pageConfigMappingList[pageName]
 
-            uniqueFormulaKeys = stripUniqFormulaKeys(pageConfig);
-            var validSampleCounts = checkSampleAndGetValidCount(logsForPage, uniqueFormulaKeys);
+      uniqueFormulaKeys = stripUniqFormulaKeys(pageConfig)
+      var validSampleCounts = checkSampleAndGetValidCount(logsForPage, uniqueFormulaKeys)
 
-            if (validSampleCounts > 0) {
-                var analyzedDataForPage = formatFunc(getOriginalDataForPageByEachKey(pageConfig, logsForPage));
-                console.log(chalk.cyan('samples counts for PAGE [ ' + pageName + ' ] : ' + validSampleCounts + ' / ' + sampleCounts + ' (valid / sum)'));
-                results[pageName] = analyzedDataForPage;
-            }
-        }
+      if (validSampleCounts > 0) {
+        var analyzedDataForPage = formatFunc(getOriginalDataForPageByEachKey(pageConfig, logsForPage))
+        console.log(chalk.cyan('samples counts for PAGE [ ' + pageName + ' ] : ' + validSampleCounts + ' / ' + sampleCounts + ' (valid / sum)'))
+        results[pageName] = analyzedDataForPage
+      }
     }
+  }
 
-    return results;
+  return results
 }
 
-function readDataByPageName(pageName) {
+// function readDataByPageName (pageName) {
+// }
 
-}
-
-function loadPageConfigs() {
-    // var configPath = path.join(__dirname, pageConfigPath);
-    // console.log(pageConfigPath);
-    // console.log(configPath);
-    return JSON.parse(fse.readFileSync(pageConfigPath, {encoding: 'utf8', autoClose: true}));
+function loadPageConfigs () {
+  // var configPath = path.join(__dirname, pageConfigPath)
+  // console.log(pageConfigPath)
+  // console.log(configPath)
+  return JSON.parse(fse.readFileSync(pageConfigPath, {encoding: 'utf8', autoClose: true}))
 }
 
 /**
@@ -179,59 +178,57 @@ function loadPageConfigs() {
  * @param  {String} path where you put the log files
  * @return {object}      the mapping of data
  */
-function readDataInFolder(path) {
-    var pageFileReg = /^page\.(.*)\.log$/;
-    var files = fse.readdirSync(path);
-    var pageNameList = [];
-    var perfData = {};
-    if (files) {
-        for (var i = files.length - 1; i > 0; i--) {
-            var regResult = pageFileReg.exec(files[i]);
-            if (regResult) {
-                perfData[regResult[1]] = JSON.parse(fse.readFileSync(path + '/' + files[i], {encoding: 'utf8', autoClose: true}));
-                pageNameList.push(regResult[1]);
-            }
-            else {
-                files.splice(i, 1);
-            }
-        }
+function readDataInFolder (path) {
+  var pageFileReg = /^page\.(.*)\.log$/
+  var files = fse.readdirSync(path)
+  var pageNameList = []
+  var perfData = {}
+  if (files) {
+    for (var i = files.length - 1; i > 0; i--) {
+      var regResult = pageFileReg.exec(files[i])
+      if (regResult) {
+        perfData[regResult[1]] = JSON.parse(fse.readFileSync(path + '/' + files[i], {encoding: 'utf8', autoClose: true}))
+        pageNameList.push(regResult[1])
+      } else {
+        files.splice(i, 1)
+      }
     }
+  }
 
-    console.log(tools.timeDiff(now) + ' analyzing log data finished...');
-    console.log('contain pages counts: ' + pageNameList.length);
+  console.log(tools.timeDiff(now) + ' analyzing log data finished...')
+  console.log('contain pages counts: ' + pageNameList.length)
 
-    return perfData;
+  return perfData
 }
 
-function getOriginalDataForPageByEachKey(pageConfig, logsForPage) {
-    var timeCollectionForKeys = {};
+function getOriginalDataForPageByEachKey (pageConfig, logsForPage) {
+  var timeCollectionForKeys = {}
 
-    console.log('');
-    pageConfig.forEach(function (configItem) {
-        timeCollectionForKeys[configItem.key] = [];
+  console.log('')
+  pageConfig.forEach(function (configItem) {
+    timeCollectionForKeys[configItem.key] = []
 
-        logsForPage.forEach(function (sample) {
-            if (sample.valid) {
-                if (Array.isArray(configItem.formula)) {
-                    var formulaLength = configItem.formula.length;
-                    var index = 0;
-                    var value = sample[configItem.formula[index]];
-                    while (index < formulaLength - 1) {
-                        index++
-                        value -= sample[configItem.formula[index]];
-                    }
-                    timeCollectionForKeys[configItem.key].push(value);
-                }
-                else {
-                    timeCollectionForKeys[configItem.key].push(sample[configItem.formula]);
-                }
-            }
-        });
-        // console.log(chalk.gray.bold('data for key [' + configItem.key + '] ', timeCollectionForKeys[configItem.key].join(', ')));
-    });
-    console.log(tools.timeDiff(now) + 'assembling data...');
+    logsForPage.forEach(function (sample) {
+      if (sample.valid) {
+        if (Array.isArray(configItem.formula)) {
+          var formulaLength = configItem.formula.length
+          var index = 0
+          var value = sample[configItem.formula[index]]
+          while (index < formulaLength - 1) {
+            index++
+            value -= sample[configItem.formula[index]]
+          }
+          timeCollectionForKeys[configItem.key].push(value)
+        } else {
+          timeCollectionForKeys[configItem.key].push(sample[configItem.formula])
+        }
+      }
+    })
+  // console.log(chalk.gray.bold('data for key [' + configItem.key + '] ', timeCollectionForKeys[configItem.key].join(', ')))
+  })
+  console.log(tools.timeDiff(now) + 'assembling data...')
 
-    return timeCollectionForKeys;
+  return timeCollectionForKeys
 }
 
 /**
@@ -240,129 +237,128 @@ function getOriginalDataForPageByEachKey(pageConfig, logsForPage) {
  * @param  {array} pageConfig [description]
  * @return {array}            unique keys for pageConfig
  */
-function stripUniqFormulaKeys(pageConfig) {
-    var allFormulaKeys = [];
-    var uniqueFormulaKeys = [];
-    for (var i = 0; i < pageConfig.length; i++) {
-        var pageConfItem = pageConfig[i];
-        if (Array.isArray(pageConfItem.formula)) {
-            allFormulaKeys.concat(pageConfItem.formula);
-        }
-        else {
-            allFormulaKeys.push(pageConfItem.formula);
-        }
+function stripUniqFormulaKeys (pageConfig) {
+  var allFormulaKeys = []
+  var uniqueFormulaKeys = []
+  for (var i = 0; i < pageConfig.length; i++) {
+    var pageConfItem = pageConfig[i]
+    if (Array.isArray(pageConfItem.formula)) {
+      allFormulaKeys.concat(pageConfItem.formula)
+    } else {
+      allFormulaKeys.push(pageConfItem.formula)
     }
+  }
 
-    for (var j = 0; j < allFormulaKeys.length; j++) {
-        if (uniqueFormulaKeys.indexOf(allFormulaKeys[j]) === -1) {
-            uniqueFormulaKeys.push(allFormulaKeys[j]);
-        }
+  for (var j = 0; j < allFormulaKeys.length; j++) {
+    if (uniqueFormulaKeys.indexOf(allFormulaKeys[j]) === -1) {
+      uniqueFormulaKeys.push(allFormulaKeys[j])
     }
-    // console.log('uniqueFormulaKeys: ' + uniqueFormulaKeys.join(', '));
-    return uniqueFormulaKeys;
+  }
+  // console.log('uniqueFormulaKeys: ' + uniqueFormulaKeys.join(', '))
+  return uniqueFormulaKeys
 }
 
 function checkSampleAndGetValidCount (logsItem, uniqueFormulaKeys) {
-    var validSampleCounts = 0;
-    logsItem.forEach(function (sample) {
-        var keyAppearCount = 0;
-        for (var iKey in sample) {
-            if (uniqueFormulaKeys.indexOf(iKey) !== -1) {
-                // Parse to number
-                sample[iKey] = +sample[iKey];
-                // Count must to have key
-                keyAppearCount++;
-            }
-        }
-        // Inject the valid flag to each sample
-        sample.valid = (keyAppearCount === uniqueFormulaKeys.length);
-        sample.valid && validSampleCounts++;
-    });
-
-    console.log('validSampleCounts: ' + validSampleCounts);
-    return validSampleCounts;
-}
-
-function removeDirtyData (statData, index) {
-    this.validSampleCounts--;
-    for (var key in statData) {
-        if (statData.hasOwnProperty(key)) {
-            statData[key].splice(index, 1);
-        }
+  var validSampleCounts = 0
+  logsItem.forEach(function (sample) {
+    var keyAppearCount = 0
+    for (var iKey in sample) {
+      if (uniqueFormulaKeys.indexOf(iKey) !== -1) {
+        // Parse to number
+        sample[iKey] = +sample[iKey]
+        // Count must to have key
+        keyAppearCount++
+      }
     }
-    return statData;
+    // Inject the valid flag to each sample
+    sample.valid = (keyAppearCount === uniqueFormulaKeys.length)
+    sample.valid && validSampleCounts++
+  })
+
+  console.log('validSampleCounts: ' + validSampleCounts)
+  return validSampleCounts
 }
+
+// function removeDirtyData (statData, index) {
+//   this.validSampleCounts--
+//   for (var key in statData) {
+//     if (statData.hasOwnProperty(key)) {
+//       statData[key].splice(index, 1)
+//     }
+//   }
+//   return statData
+// }
 
 function lengthFunc (arr) {
-    // console.log(chalk.cyan('sample counts : ' + arr.length));
-    return arr.length;
+  // console.log(chalk.cyan('sample counts : ' + arr.length))
+  return arr.length
 }
 
 function medianFunc (arr) {
-    arr.sort(function (a, b) {
-        return a - b;
-    });
-    var len = arr.length;
-    if (len % 2) {
-        return arr[~~(len / 2)];
-    }
-    return (+arr[len / 2 - 1] + +arr[len / 2]) / 2;
+  arr.sort(function (a, b) {
+    return a - b
+  })
+  var len = arr.length
+  if (len % 2) {
+    return arr[~~(len / 2)]
+  }
+  return (+arr[len / 2 - 1] + +arr[len / 2]) / 2
 }
 
 function minFunc (arr) {
-    return Math.min.apply(Math, arr);
+  return Math.min.apply(Math, arr)
 }
 
 function maxFunc (arr) {
-    return Math.max.apply(Math, arr);
+  return Math.max.apply(Math, arr)
 }
 
 function averageFunc (arr) {
-    var total = arr.reduce(function (a, b) {
-        return +a + +b;
-    });
-    return +((total / arr.length).toFixed(1));
+  var total = arr.reduce(function (a, b) {
+    return +a + +b
+  })
+  return +((total / arr.length).toFixed(1))
 }
 
 function formatFunc (data) {
-    var self = this;
-    var results = {};
-    var serial = [
-        {
-            label: 'Sample Count',
-            func: lengthFunc
-        },
-        {
-            label: 'average(ms)',
-            func: averageFunc
-        },
-        {
-            label: 'median(ms)',
-            func: medianFunc
-        },
-        {
-            label: 'min(ms)',
-            func: minFunc
-        },
-        {
-            label: 'max(ms)',
-            func: maxFunc
-        }
-    ];
-    for (var key in data) {
-        if (data.hasOwnProperty(key)) {
-            results[key] = {};
-            var val = data[key];
-            serial.forEach(function (serialItem, index) {
-                var value = serialItem.func(val);
-                // if (index === 0) {
-                //     value = self.invalidSamplesCount[key];
-                // }
-                results[key][serialItem.label] = value;
-            });
-        }
+//   var self = this
+  var results = {}
+  var serial = [
+    {
+      label: 'Sample Count',
+      func: lengthFunc
+    },
+    {
+      label: 'average(ms)',
+      func: averageFunc
+    },
+    {
+      label: 'median(ms)',
+      func: medianFunc
+    },
+    {
+      label: 'min(ms)',
+      func: minFunc
+    },
+    {
+      label: 'max(ms)',
+      func: maxFunc
     }
-    return results;
+  ]
+  for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      results[key] = {}
+      var val = data[key]
+      serial.forEach(function (serialItem, index) {
+        var value = serialItem.func(val)
+        // if (index === 0) {
+        //     value = self.invalidSamplesCount[key]
+        // }
+        results[key][serialItem.label] = value
+      })
+    }
+  }
+  return results
 }
 
-execute();
+execute()
